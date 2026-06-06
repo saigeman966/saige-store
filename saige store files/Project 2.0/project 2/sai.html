@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAIGE — Pure Street Luxury</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:   #F0EBE3;
+      --bg2:  #E6E0D6;
+      --ink:  #0A0A0A;
+      --mid:  #777;
+      --line: #D5CEC4;
+      --teal: #2A7A6F;
+      --t2:   #1E5C53;
+      --w:    #fff;
+      --red:  #C0392B;
+      --nh:   56px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
+
+    /* ── WIPE ──────────────────────────── */
+    #wipe{position:fixed;inset:0;z-index:9999;background:var(--ink);transform:scaleX(0);transform-origin:left;pointer-events:none}
+    #wipe.run{animation:wp .58s cubic-bezier(.77,0,.18,1) forwards}
+    @keyframes wp{
+      0%  {transform:scaleX(0);transform-origin:left}
+      45% {transform:scaleX(1);transform-origin:left}
+      55% {transform:scaleX(1);transform-origin:right}
+      100%{transform:scaleX(0);transform-origin:right}
+    }
+
+    /* ── VIEWS ─────────────────────────── */
+    .view{position:fixed;inset:0;overflow-y:auto;transition:transform .52s cubic-bezier(.77,0,.18,1),opacity .52s cubic-bezier(.77,0,.18,1);will-change:transform,opacity;background:var(--bg)}
+    .view.active    {transform:translateX(0);   opacity:1;pointer-events:all}
+    .view.off-right {transform:translateX(100%);opacity:0;pointer-events:none}
+    .view.off-left  {transform:translateX(-8%); opacity:0;pointer-events:none}
+
+    /* ── NAV — pure flexbox, logo never overflows ── */
+    .nav{
+      position:sticky;top:0;z-index:500;
+      height:var(--nh);
+      background:var(--bg);
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;
+      padding:0 clamp(10px,2vw,28px);
+      gap:6px;
+      overflow:hidden;
+    }
+    .nav-logo{flex-shrink:0;display:flex;align-items:center;cursor:pointer;min-width:0}
+    .nav-logo img{height:clamp(20px,3.2vw,32px);width:auto;object-fit:contain;max-width:clamp(70px,11vw,140px)}
+    .nav-links{flex:1;display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.8vw,24px);min-width:0;overflow:hidden}
+    .nav-links a{font-size:clamp(10px,1.1vw,13px);color:var(--ink);white-space:nowrap;transition:color .2s;flex-shrink:0}
+    .nav-links a:hover{color:var(--teal)}
+    .nav-icons{flex-shrink:0;display:flex;align-items:center;gap:2px;margin-left:auto}
+    .ni{width:clamp(26px,3vw,34px);height:clamp(26px,3vw,34px);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:background .2s,transform .15s}
+    .ni:hover{background:var(--bg2);transform:scale(1.07)}
+    .ni:active{transform:scale(.93)}
+    .ni svg{width:clamp(15px,1.8vw,19px);height:clamp(15px,1.8vw,19px);fill:none;stroke:var(--ink);stroke-width:1.5}
+    .ni img{width:clamp(16px,2vw,21px);height:clamp(16px,2vw,21px);border-radius:50%}
+    .badge{position:absolute;top:-3px;right:-3px;width:15px;height:15px;border-radius:50%;background:var(--teal);color:var(--w);font-size:8px;font-weight:500;display:flex;align-items:center;justify-content:center;pointer-events:none}
+
+    /* ── HERO 2-COL ────────────────────── */
+    .h2col{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+    .hcol{background:var(--bg2);overflow:hidden;cursor:pointer}
+    .hcol-img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+    .hcol:hover .hcol-img{transform:scale(1.04)}
+    .hcol-info{padding:12px 16px 18px}
+    .hcol-name{font-size:clamp(13px,1.5vw,16px);font-weight:500;margin-bottom:5px}
+    .hcol-desc{font-size:clamp(10px,1vw,12px);color:var(--mid);line-height:1.6;margin-bottom:12px}
+    .btn-vc{padding:8px 18px;background:var(--ink);color:var(--w);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s,transform .15s;display:inline-block}
+    .btn-vc:hover{background:var(--teal);transform:translateY(-1px)}
+    .btn-vc:active{transform:translateY(0)}
+
+    /* dots */
+    .dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
+    .dot{height:3px;border-radius:2px;background:var(--line);transition:width .3s,background .3s;width:28px}
+    .dot.on{background:var(--ink);width:38px}
+
+    /* ── SECTION LABEL ─────────────────── */
+    .slbl{font-size:clamp(14px,1.8vw,18px);font-weight:400;text-align:center;padding:clamp(16px,2.5vw,26px) clamp(10px,2vw,20px) clamp(8px,1.2vw,14px)}
+
+    /* ── PRODUCT GRIDS ─────────────────── */
+    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(3px,.4vw,5px);padding:0 clamp(10px,2vw,20px) clamp(12px,1.8vw,18px)}
+    .pc{cursor:pointer}
+    .pc-img{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--bg2);border-radius:8px;transition:transform .42s cubic-bezier(.16,1,.3,1)}
+    .pc:hover .pc-img{transform:scale(1.04) translateY(-2px)}
+    .pc-name{font-size:clamp(10px,1.1vw,13px);text-align:center;margin-top:6px;transition:color .2s}
+    .pc:hover .pc-name{color:var(--teal)}
+
+    .g6{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(3px,.4vw,5px);padding:0 clamp(10px,2vw,20px) clamp(12px,1.8vw,18px)}
+    .ps{cursor:pointer}
+    .ps-img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--bg2);border-radius:6px;transition:transform .38s cubic-bezier(.16,1,.3,1)}
+    .ps:hover .ps-img{transform:scale(1.05) translateY(-2px)}
+    .ps-name{font-size:clamp(9px,1vw,12px);margin-top:5px}
+    .ps-price{font-size:clamp(9px,1vw,12px);color:var(--mid)}
+
+    /* ── PROMO BANNER ──────────────────── */
+    .promo{margin:5px clamp(10px,2vw,20px);background:var(--ink);border-radius:8px;padding:clamp(18px,3.5vw,40px) clamp(14px,3.5vw,44px);display:flex;align-items:center;justify-content:space-between;gap:10px;overflow:hidden}
+    .pt{font-size:clamp(22px,5.5vw,72px);font-weight:700;color:var(--w);line-height:.9;letter-spacing:-.01em;flex-shrink:0}
+    .pt span{color:var(--teal)}
+    .pm{text-align:center;flex-shrink:0}
+    .pm .up{font-size:clamp(7px,.9vw,10px);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+    .pm .pct{font-size:clamp(22px,5.5vw,72px);font-weight:700;color:var(--w);line-height:.9}
+    .pm .lb{font-size:clamp(7px,.9vw,10px);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+
+    /* ── WTTL BAR ──────────────────────── */
+    .wbar{margin:clamp(10px,1.8vw,18px) clamp(10px,2vw,20px) 0;border:1px solid var(--line);background:var(--bg2);padding:clamp(12px,1.8vw,18px) clamp(14px,2vw,22px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .wbar h3{font-size:clamp(12px,1.4vw,15px);font-weight:500}
+    .wbar p{font-size:clamp(9px,1vw,12px);color:var(--mid);margin-top:2px}
+    .btn-jn{padding:9px 20px;background:var(--teal);color:var(--w);font-size:clamp(8px,.9vw,11px);letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;transition:background .2s,transform .15s}
+    .btn-jn:hover{background:var(--t2);transform:translateY(-1px)}
+    .btn-jn:active{transform:translateY(0)}
+
+    /* ── FOOTER ────────────────────────── */
+    .footer{background:var(--ink);color:rgba(255,255,255,.42);padding:clamp(24px,3.5vw,44px) clamp(10px,2vw,20px) clamp(12px,1.8vw,18px);margin-top:clamp(12px,1.8vw,18px)}
+    .fg{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(12px,1.8vw,22px);margin-bottom:clamp(20px,3vw,32px)}
+    .fc h4{font-size:clamp(8px,.9vw,10px);letter-spacing:.15em;text-transform:uppercase;color:var(--w);margin-bottom:clamp(7px,1vw,12px);font-weight:500}
+    .fc a{display:block;font-size:clamp(9px,1vw,11px);color:rgba(255,255,255,.36);margin-bottom:clamp(4px,.5vw,6px);transition:color .2s}
+    .fc a:hover{color:rgba(255,255,255,.8)}
+    .fbr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.8vw,22px);border-top:1px solid rgba(255,255,255,.07);padding-top:clamp(16px,2.2vw,22px);margin-bottom:clamp(12px,1.8vw,18px)}
+    .fem label{font-size:clamp(11px,1.2vw,13px);color:var(--w);font-weight:500}
+    .fem p{font-size:clamp(9px,1vw,11px);color:rgba(255,255,255,.36);margin-top:2px}
+    .finp{width:100%;margin-top:7px;padding:8px 10px;background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--w);font-family:'DM Sans',sans-serif;font-size:clamp(9px,1vw,11px);outline:none}
+    .finp::placeholder{color:rgba(255,255,255,.22)}
+    .fchk{display:flex;align-items:flex-start;gap:6px;margin-top:5px}
+    .fchk input{margin-top:3px;flex-shrink:0;cursor:pointer}
+    .fchk label{font-size:clamp(8px,.9vw,10px);color:rgba(255,255,255,.25);cursor:pointer}
+    .btn-su{margin-top:7px;padding:8px 20px;background:var(--teal);color:var(--w);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:clamp(8px,.9vw,11px);letter-spacing:.12em;text-transform:uppercase;transition:background .2s,transform .15s}
+    .btn-su:hover{background:var(--t2);transform:translateY(-1px)}
+    .fst h4{font-size:clamp(11px,1.2vw,13px);color:var(--w);font-weight:500;margin-bottom:4px;letter-spacing:0;text-transform:none}
+    .fst p{font-size:clamp(9px,1vw,11px);color:rgba(255,255,255,.36);margin-bottom:8px}
+    .btn-sl{padding:8px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:var(--w);font-family:'DM Sans',sans-serif;font-size:clamp(9px,1vw,11px);cursor:pointer;transition:background .2s}
+    .btn-sl:hover{background:rgba(255,255,255,.13)}
+    .ffw{margin-top:clamp(12px,1.8vw,18px)}
+    .ffw h4{font-size:clamp(11px,1.2vw,13px);color:var(--w);font-weight:500;margin-bottom:7px}
+    .fsoc{display:flex;gap:9px}
+    .fsoc svg{width:clamp(15px,1.8vw,19px);height:clamp(15px,1.8vw,19px);fill:rgba(255,255,255,.42);cursor:pointer;transition:fill .2s,transform .15s}
+    .fsoc svg:hover{fill:var(--w);transform:scale(1.12)}
+    .fleg{border-top:1px solid rgba(255,255,255,.07);padding-top:clamp(9px,1.2vw,13px);display:flex;flex-wrap:wrap;gap:5px 14px;font-size:clamp(8px,.9vw,10px);color:rgba(255,255,255,.26)}
+    .fleg a{color:rgba(255,255,255,.26);transition:color .2s}
+    .fleg a:hover{color:rgba(255,255,255,.6)}
+
+    /* ══════════════════════════════════════
+       CART PAGE
+    ══════════════════════════════════════ */
+
+    /* Luxury banner */
+    .clux{background:var(--ink);padding:clamp(8px,1.2vw,14px) clamp(10px,2vw,20px);display:flex;align-items:center;gap:clamp(8px,1.5vw,18px);overflow:hidden}
+    .clux-img{height:clamp(38px,5.5vw,52px);width:clamp(56px,7.5vw,82px);object-fit:cover;flex-shrink:0;border-radius:4px}
+    .clux-txt{font-size:clamp(10px,2.2vw,19px);font-weight:700;color:var(--w);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* Cart header */
+    .chead{padding:clamp(10px,1.5vw,16px) clamp(10px,2vw,20px);display:flex;justify-content:space-between;align-items:center}
+    .chead h2{font-size:clamp(14px,2vw,20px);font-weight:400}
+    .chead p{font-size:clamp(9px,1vw,12px);color:var(--mid)}
+    .btn-off{padding:clamp(6px,.8vw,9px) clamp(14px,2vw,22px);background:var(--teal);color:var(--w);font-size:clamp(9px,1vw,12px);letter-spacing:.1em;text-transform:uppercase;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:4px;transition:background .2s,transform .15s}
+    .btn-off:hover{background:var(--t2);transform:translateY(-1px)}
+
+    /* Cart 3-col grid */
+    .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(6px,1.2vw,12px);padding:0 clamp(10px,2vw,20px) clamp(12px,1.8vw,18px)}
+    .cc{background:var(--w);border-radius:8px;overflow:hidden;transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+    .cc:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.09)}
+    .cc-img{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--bg2)}
+    .cc-body{padding:clamp(7px,1vw,12px)}
+    .cc-name{font-size:clamp(10px,1.1vw,14px);font-weight:400;margin-bottom:2px}
+    .cc-price{font-size:clamp(10px,1.1vw,13px);color:var(--mid);margin-bottom:8px}
+
+    /* qty */
+    .qr{display:inline-flex;align-items:center;border:1px solid var(--line);margin-bottom:8px}
+    .qb{width:clamp(22px,2.5vw,28px);height:clamp(22px,2.5vw,28px);border:none;background:transparent;cursor:pointer;font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s}
+    .qb:hover{background:var(--bg2)}
+    .qb:active{transform:scale(.88)}
+    .qn{width:clamp(26px,3vw,32px);height:clamp(22px,2.5vw,28px);display:flex;align-items:center;justify-content:center;font-size:clamp(10px,1.1vw,13px);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+
+    /* action buttons */
+    .ca{display:flex;gap:5px;align-items:center}
+    .btn-sv{flex:1;padding:clamp(4px,.6vw,7px) clamp(6px,.9vw,10px);background:var(--ink);color:var(--w);font-size:clamp(7px,.8vw,9px);letter-spacing:.1em;text-transform:uppercase;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s,transform .13s}
+    .btn-sv:hover{background:#222;transform:translateY(-1px)}
+    .btn-sv:active{transform:translateY(0)}
+    .btn-dl{width:clamp(24px,2.8vw,30px);height:clamp(24px,2.8vw,30px);background:none;border:1px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .2s,background .2s,transform .13s}
+    .btn-dl:hover{border-color:var(--red);background:rgba(192,57,43,.06);transform:scale(1.06)}
+    .btn-dl:active{transform:scale(.9)}
+    .btn-dl svg{width:11px;height:11px;fill:none;stroke:var(--mid);stroke-width:1.5}
+    .btn-dl:hover svg{stroke:var(--red)}
+
+    /* order summary + customer */
+    .csr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,20px);padding:0 clamp(10px,2vw,20px) clamp(12px,1.8vw,18px)}
+    .osum h3{font-size:clamp(12px,1.4vw,15px);font-weight:500;margin-bottom:clamp(8px,1.2vw,13px)}
+    .sr{display:flex;justify-content:space-between;font-size:clamp(10px,1.1vw,13px);color:var(--mid);padding:clamp(4px,.5vw,6px) 0}
+    .sr.tot{font-size:clamp(12px,1.3vw,15px);color:var(--ink);font-weight:500;border-top:1px solid var(--line);padding-top:clamp(6px,1vw,11px);margin-top:3px}
+    .sr.tot span:last-child{font-size:clamp(14px,1.8vw,19px)}
+    .cbox{margin-top:clamp(8px,1.2vw,13px);padding:clamp(10px,1.4vw,14px);background:var(--ink);border-radius:6px;display:flex;gap:clamp(7px,1vw,11px);align-items:flex-start}
+    .cico{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+    .ci{width:clamp(18px,2.2vw,24px);height:clamp(18px,2.2vw,24px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--w)}
+    .cb{background:#F7931A}.ce{background:#627EEA}.cd{background:#C2A633}.cx{background:#555}
+    .ctx{font-size:clamp(8px,.9vw,11px);color:rgba(255,255,255,.43);line-height:1.65}
+    .ctx strong{color:var(--w)}
+    .cpnl{display:flex;flex-direction:column;gap:clamp(5px,.7vw,9px)}
+    .cs{border:1px solid var(--line);border-radius:6px;padding:clamp(9px,1.2vw,13px) clamp(10px,1.4vw,15px);transition:border-color .2s}
+    .cs:hover{border-color:var(--teal)}
+    .csh{display:flex;justify-content:space-between;align-items:center;font-size:clamp(10px,1.1vw,13px);font-weight:500;cursor:pointer;margin-bottom:7px}
+    .csh .cv{color:var(--mid);font-size:11px}
+    .csh .ce2{background:none;border:none;cursor:pointer;color:var(--mid);font-size:12px;transition:color .2s}
+    .csh .ce2:hover{color:var(--teal)}
+    .csb{font-size:clamp(9px,1vw,12px);color:var(--mid);line-height:1.8}
+    .csb strong{color:var(--ink);font-weight:500}
+    .mlink{color:var(--teal);font-size:clamp(9px,1vw,12px);cursor:pointer;display:flex;align-items:center;gap:4px;margin-top:3px;transition:opacity .2s}
+    .mlink:hover{opacity:.7}
+
+    /* ── RESPONSIVE ────────────────────── */
+    @media(max-width:1024px){
+      .fg{grid-template-columns:repeat(3,1fr)}
+      .cgrid{grid-template-columns:repeat(3,1fr)}
+      .csr{grid-template-columns:1fr}
+      .g6{grid-template-columns:repeat(3,1fr)}
+    }
+    @media(max-width:768px){
+      :root{--nh:46px}
+      .nav-links{display:none}
+      .h2col{grid-template-columns:1fr}
+      .g4{grid-template-columns:repeat(2,1fr)}
+      .g6{grid-template-columns:repeat(2,1fr)}
+      .cgrid{grid-template-columns:repeat(2,1fr)}
+      .csr{grid-template-columns:1fr}
+      .promo{flex-direction:column;text-align:center;gap:8px}
+      .wbar{flex-direction:column;align-items:flex-start;gap:10px}
+      .fg{grid-template-columns:repeat(2,1fr)}
+      .fbr{grid-template-columns:1fr}
+    }
+    @media(max-width:480px){
+      .cgrid{grid-template-columns:1fr 1fr;gap:5px}
+      .g4,.g6{grid-template-columns:1fr 1fr;gap:4px}
+      .fg{grid-template-columns:1fr 1fr}
+      .csr{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div id="wipe"></div>
+
+<!-- ══════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════ -->
+<div class="view active" id="v-home">
+
+  <nav class="nav">
+    <div class="nav-logo">
+      <img src="saige logo.png" alt="SAIGE">
+    </div>
+    <div class="nav-links">
+      <a href="#">⊞ All categories ∨</a>
+      <a href="#">Menswear</a>
+      <a href="#">Womenswear</a>
+      <a href="#">Kids</a>
+      <a href="#">News</a>
+    </div>
+    <div class="nav-icons">
+      <div class="ni"><img src="https://flagcdn.com/w40/in.png" alt="IN"></div>
+      <div class="ni" id="cart-btn" onclick="toCart()" title="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="badge" id="b1">6</span>
+      </div>
+      <div class="ni">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO COLLECTIONS -->
+  <div class="h2col">
+    <div class="hcol">
+      <img src="grayscale.png" alt="Grayscale Remains" class="hcol-img">
+      <div class="hcol-info">
+        <div class="hcol-name">Grayscale Remains</div>
+        <div class="hcol-desc">Where monochrome meets movement. Every piece crafted to embody balance, depth, and understated power.</div>
+        <button class="btn-vc">View Collection</button>
+      </div>
+    </div>
+    <div class="hcol">
+      <img src="retro fashion.png" alt="Retro Fashion" class="hcol-img">
+      <div class="hcol-info">
+        <div class="hcol-name">Retro Fashion</div>
+        <div class="hcol-desc">A timeless revival merging vintage flair with modern streetwear. Every piece is built to stand out, one of one by design.</div>
+        <button class="btn-vc">View Collection</button>
+      </div>
+    </div>
+  </div>
+  <div class="dots"><div class="dot on"></div><div class="dot"></div></div>
+
+  <!-- NEW ARRIVALS -->
+  <div class="slbl">New Arrivals</div>
+  <div class="g4">
+    <div class="pc"><img src="autumn style.png" alt="Autumn Style" class="pc-img"><div class="pc-name">Autumn Style</div></div>
+    <div class="pc"><img src="korean style.png" alt="Korean Style" class="pc-img"><div class="pc-name">Korean Style</div></div>
+    <div class="pc"><img src="heritage style.png" alt="Heritage Style" class="pc-img"><div class="pc-name">Heritage Style</div></div>
+    <div class="pc"><img src="western style.png" alt="Western style" class="pc-img"><div class="pc-name">Western style</div></div>
+  </div>
+
+  <!-- CURATED FOR YOU -->
+  <div class="slbl">Curated for you</div>
+  <div class="g6">
+    <div class="ps"><img src="logo shirt.png" alt="Logo shirt" class="ps-img"><div class="ps-name">Logo shirt</div><div class="ps-price">₹460</div></div>
+    <div class="ps"><img src="white tee.png" alt="White Tee" class="ps-img"><div class="ps-name">White Tee</div><div class="ps-price">₹250</div></div>
+    <div class="ps"><img src="shearling leather jacket.png" alt="Shearling leather jacket" class="ps-img"><div class="ps-name">Shearling leather jacket</div><div class="ps-price">₹2500</div></div>
+    <div class="ps"><img src="pattern shirt.png" alt="Pattern Shirt" class="ps-img"><div class="ps-name">Pattern Shirt</div><div class="ps-price">₹500</div></div>
+    <div class="ps"><img src="WTTL Tee.png" alt="WTTL Tee" class="ps-img"><div class="ps-name">WTTL Tee</div><div class="ps-price">₹354</div></div>
+    <div class="ps"><img src="wttl fullsleeve.png" alt="WTTL Tee" class="ps-img"><div class="ps-name">WTTL Tee</div><div class="ps-price">₹490</div></div>
+  </div>
+
+  <!-- PROMO BANNER -->
+  <div class="promo">
+    <div class="pt">PAY HALF<br><span>LOOK DOUBLE</span></div>
+    <div class="pm"><div class="up">UP TO</div><div class="pct">50%</div><div class="lb">SEASON</div></div>
+    <div class="pt" style="text-align:right">SEASON<br><span>SALE</span></div>
+  </div>
+
+  <!-- MORE PRODUCTS ROW 1 -->
+  <div class="g6" style="margin-top:clamp(8px,1.5vw,14px)">
+    <div class="ps"><img src="knit jumper.png" alt="knit jumper" class="ps-img"><div class="ps-name">knit jumper</div><div class="ps-price">₹656</div></div>
+    <div class="ps"><img src="grey shades.png" alt="Grey shades" class="ps-img"><div class="ps-name">Grey shades</div><div class="ps-price">₹324</div></div>
+    <div class="ps"><img src="roses oversized shirt.png" alt="Roses Oversized T-shirt" class="ps-img"><div class="ps-name">Roses Oversized T-shirt</div><div class="ps-price">₹730</div></div>
+    <div class="ps"><img src="blacked out shirt.png" alt="Blacked out Shirt" class="ps-img"><div class="ps-name">Blacked out Shirt</div><div class="ps-price">₹250</div></div>
+    <div class="ps"><img src="vintage t shirt.png" alt="Vintage T-Shirt" class="ps-img"><div class="ps-name">Vintage T-Shirt</div><div class="ps-price">₹450</div></div>
+    <div class="ps"><img src="polo t shirt.png" alt="Polo T-Shirt" class="ps-img"><div class="ps-name">Polo T-Shirt</div><div class="ps-price">₹675</div></div>
+  </div>
+
+  <!-- MORE PRODUCTS ROW 2 (PANTS) -->
+  <div class="g6">
+    <div class="ps"><img src="straight leg trouser.png" alt="Straight Leg Trouser" class="ps-img"><div class="ps-name">Straight Leg Trouser</div><div class="ps-price">₹850</div></div>
+    <div class="ps"><img src="assembly pant.png" alt="Assembly Pant" class="ps-img"><div class="ps-name">Assembly Pant</div><div class="ps-price">₹950</div></div>
+    <div class="ps"><img src="painter pants.png" alt="Painter pants" class="ps-img"><div class="ps-name">Painter pants</div><div class="ps-price">₹1,500</div></div>
+    <div class="ps"><img src="utility field pants.png" alt="Utility field pants" class="ps-img"><div class="ps-name">Utility field pants</div><div class="ps-price">₹1,000</div></div>
+    <div class="ps"><img src="ribbed hybrid pants.png" alt="Ribbed Hybrid Pant" class="ps-img"><div class="ps-name">Ribbed Hybrid Pant</div><div class="ps-price">₹1,500</div></div>
+    <div class="ps"><img src="wide leg denim jeans.png" alt="Wide leg Denim jeans" class="ps-img"><div class="ps-name">Wide leg Denim jeans</div><div class="ps-price">₹1,700</div></div>
+  </div>
+
+  <!-- WTTL BAR -->
+  <div class="wbar">
+    <div><h3>Join WTTF Club</h3><p>get Early access to Limited Drops, Birthday Gifts Points on every purchase and rewards</p></div>
+    <button class="btn-jn">JOIN NOW</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="fg">
+      <div class="fc"><h4>shop</h4><a href="#">Women's</a><a href="#">Men's</a><a href="#">Kids</a><a href="#">Footwear</a><a href="#">Equipment</a><a href="#">By Activity</a><a href="#">Gift Cards</a></div>
+      <div class="fc"><h4>Help</h4><a href="#">Live Chat</a><a href="#">Help Center</a><a href="#">Order Status</a><a href="#">Size Chart</a><a href="#">Returns & Warranty</a><a href="#">Submit a Warranty Claim</a><a href="#">Accessibility Statement</a><a href="#">Product Recall</a></div>
+      <div class="fc"><h4>About Us</h4><a href="#">Who We Are</a><a href="#">Sustainability</a><a href="#">Renewed</a><a href="#">Cryptocurrency & Fashion</a><a href="#">Explore our Stories</a><a href="#">Athletes</a><a href="#">WTTL Club</a><a href="#">Careers</a></div>
+      <div class="fc"><h4>Discover</h4><a href="#">Men's T-Shirt</a><a href="#">Women's T-Shirt</a><a href="#">Men's Sweatshirt</a><a href="#">Women's Sweatshirt</a><a href="#">Jewllery & Accessories</a><a href="#">Footwear</a><a href="#">Lifestyle</a><a href="#">Travel</a><a href="#">News</a></div>
+      <div class="fc"><h4>Explore</h4><a href="#">VIP Membership</a><a href="#">Events</a><a href="#">Saigecoin</a><a href="#">Member Discount</a><a href="#">WTTL Club</a><a href="#">Student Discount</a></div>
+    </div>
+    <div class="fbr">
+      <div class="fem">
+        <label>Join our Email List</label>
+        <p>Style never sleeps. Keep it fresh in your inbox</p>
+        <input class="finp" type="email" placeholder="Email Address">
+        <div class="fchk"><input type="checkbox" id="p1"><label for="p1">I agree to the Privacy Policy &amp; Terms of Use</label></div>
+        <button class="btn-su">Sign Up</button>
+      </div>
+      <div>
+        <div class="fst"><h4>Find a Store</h4><p>Explore a retail store or outlet near you</p><button class="btn-sl">Store Locator</button></div>
+        <div class="ffw">
+          <h4>Follow Saige</h4>
+          <div class="fsoc">
+            <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--bg)"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="var(--bg)"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="var(--bg)" stroke-width="2"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2a7.2 7.2 0 01-6-3.22c.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08a7.2 7.2 0 01-6 3.22z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.77 1.52V6.76a4.85 4.85 0 01-1-.07z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fleg">
+      <a href="#">The Archive</a><a href="#">Seasonal Edit</a><a href="#">Privacy Policy</a>
+      <a href="#">Your Privacy Cookies</a><a href="#">Notice at Collection</a>
+      <a href="#">Terms of Use</a><a href="#">Accessibility Statement</a>
+      <span style="margin-left:auto">🇮🇳 IN | Change</span>
+    </div>
+  </footer>
+
+</div><!-- /v-home -->
+
+
+<!-- ══════════════════════════════════════
+     CART PAGE
+══════════════════════════════════════ -->
+<div class="view off-right" id="v-cart">
+
+  <!-- NAV — logo click = go back -->
+  <nav class="nav">
+    <div class="nav-logo" onclick="toHome()" title="Back to Shop" style="cursor:pointer">
+      <img src="saige logo.png" alt="SAIGE">
+    </div>
+    <div class="nav-links">
+      <a href="#">⊞ All categories ∨</a>
+      <a href="#">Menswear</a>
+      <a href="#">Womenswear</a>
+      <a href="#">Kids</a>
+      <a href="#">News</a>
+    </div>
+    <div class="nav-icons">
+      <div class="ni"><img src="https://flagcdn.com/w40/in.png" alt="IN"></div>
+      <div class="ni" onclick="toHome()" title="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="badge" id="b2">6</span>
+      </div>
+      <div class="ni">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- LUXURY BANNER -->
+  <div class="clux">
+    <img src="models.png" alt="" class="clux-img">
+    <div class="clux-txt">LUXURY IN &nbsp; THE STREETS.WAR IN THE DETAILS</div>
+  </div>
+
+  <!-- CART HEADER -->
+  <div class="chead">
+    <div><h2>Cart</h2><p id="ccount">6 products</p></div>
+    <button class="btn-off">Offers</button>
+  </div>
+
+  <!-- CART ITEMS 3-COL -->
+  <div class="cgrid" id="cgrid">
+
+    <div class="cc" id="cc1">
+      <img src="sandy brown jacket.png" alt="Sandy Brown Jacket" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Sandy Brown Jacket</div>
+        <div class="cc-price">₹2500</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+    <div class="cc" id="cc2">
+      <img src="denim jacket.png" alt="Denim Jacket" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Denim Jacket</div>
+        <div class="cc-price">₹5600</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+    <div class="cc" id="cc3">
+      <img src="wide leg denim.png" alt="Wide leg Denim" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Wide leg Denim</div>
+        <div class="cc-price">₹5800</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+    <div class="cc" id="cc4">
+      <img src="bricked dneakers.png" alt="Bricked Sneakers" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Bricked Sneakers</div>
+        <div class="cc-price">₹7000</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+    <div class="cc" id="cc5">
+      <img src="baseball cap.png" alt="Baseball Cap" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Baseball Cap</div>
+        <div class="cc-price">₹1500</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+    <div class="cc" id="cc6">
+      <img src="weekend bag.png" alt="Weekend Bag" class="cc-img">
+      <div class="cc-body">
+        <div class="cc-name">Weekend Bag</div>
+        <div class="cc-price">₹5750</div>
+        <div class="qr"><button class="qb" onclick="chQ(this,-1)">-</button><div class="qn">1</div><button class="qb" onclick="chQ(this,1)">+</button></div>
+        <div class="ca"><button class="btn-sv">Save for later</button><button class="btn-dl" onclick="rmI(this)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ORDER SUMMARY + CUSTOMER -->
+  <div class="csr">
+    <div class="osum">
+      <h3>Order Summary</h3>
+      <div class="sr"><span>Subtotal(6)</span><span>₹28,150</span></div>
+      <div class="sr"><span>Shipping charge</span><span>₹60</span></div>
+      <div class="sr"><span>Tax</span><span>₹150</span></div>
+      <div class="sr"><span>Discount</span><span>₹20</span></div>
+      <div class="sr tot"><span>Total</span><span>₹28,340</span></div>
+      <div class="cbox">
+        <div class="cico"><div class="ci cb">₿</div><div class="ci ce">Ξ</div><div class="ci cd">Ð</div><div class="ci cx">✕</div></div>
+        <div class="ctx">Members get early access and the Limited Drops. Free shipping and more benefits. Also Saige coin offers more benefit where you can purchase our exclusive drops and Collab. <strong>This is where Crypto meets fashion</strong></div>
+      </div>
+    </div>
+    <div class="cpnl">
+      <div class="cs"><div class="csh"><span>Customer</span><span class="cv">∨</span></div><div class="csb">👤 <strong>Ranvier Narula</strong><br>🗂 6 orders</div></div>
+      <div class="cs"><div class="csh"><span>Customer Information</span><button class="ce2">✏️</button></div><div class="csb">✉️ Romvoi@gmail.com<br>📞 +91 6741 348179</div></div>
+      <div class="cs"><div class="csh"><span>Shipping Address</span><button class="ce2">✏️</button></div><div class="csb">👤 Ranvir Narula<br>12201 Golf Course Road<br>Gurgaon, India<div class="mlink">📍 Select on Map</div></div></div>
+      <div class="cs"><div class="csh"><span>Billing Address</span><span class="cv">∨</span></div><div class="csb">Same as Shipping Address</div></div>
+    </div>
+  </div>
+
+  <!-- WTTL BAR -->
+  <div class="wbar" style="margin:0 clamp(10px,2vw,20px) clamp(12px,1.8vw,18px)">
+    <div><h3>Join WTTF Club</h3><p>get Early access to Limited Drops, Birthday Gifts Points on every purchase and rewards</p></div>
+    <button class="btn-jn">JOIN NOW</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="fg">
+      <div class="fc"><h4>shop</h4><a href="#">Women's</a><a href="#">Men's</a><a href="#">Kids</a><a href="#">Footwear</a><a href="#">Equipment</a><a href="#">By Activity</a><a href="#">Gift Cards</a></div>
+      <div class="fc"><h4>Help</h4><a href="#">Live Chat</a><a href="#">Help Center</a><a href="#">Order Status</a><a href="#">Size Chart</a><a href="#">Returns & Warranty</a><a href="#">Submit a Warranty Claim</a><a href="#">Accessibility Statement</a><a href="#">Product Recall</a></div>
+      <div class="fc"><h4>About Us</h4><a href="#">Who We Are</a><a href="#">Sustainability</a><a href="#">Renewed</a><a href="#">Cryptocurrency & Fashion</a><a href="#">Explore our Stories</a><a href="#">Athletes</a><a href="#">WTTL Club</a><a href="#">Careers</a></div>
+      <div class="fc"><h4>Discover</h4><a href="#">Men's T-Shirt</a><a href="#">Women's T-Shirt</a><a href="#">Men's Sweatshirt</a><a href="#">Women's Sweatshirt</a><a href="#">Jewllery & Accessories</a><a href="#">Footwear</a><a href="#">Lifestyle</a><a href="#">Travel</a><a href="#">News</a></div>
+      <div class="fc"><h4>Explore</h4><a href="#">VIP Membership</a><a href="#">Events</a><a href="#">Saigecoin</a><a href="#">Member Discount</a><a href="#">WTTL Club</a><a href="#">Student Discount</a></div>
+    </div>
+    <div class="fbr">
+      <div class="fem">
+        <label>Join our Email List</label>
+        <p>Style never sleeps. Keep it fresh in your inbox</p>
+        <input class="finp" type="email" placeholder="Email Address">
+        <div class="fchk"><input type="checkbox" id="p2"><label for="p2">I agree to the Privacy Policy &amp; Terms of Use</label></div>
+        <button class="btn-su">Sign Up</button>
+      </div>
+      <div>
+        <div class="fst"><h4>Find a Store</h4><p>Explore a retail store or outlet near you</p><button class="btn-sl">Store Locator</button></div>
+        <div class="ffw">
+          <h4>Follow Saige</h4>
+          <div class="fsoc">
+            <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--bg)"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="var(--bg)"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="var(--bg)" stroke-width="2"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2a7.2 7.2 0 01-6-3.22c.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08a7.2 7.2 0 01-6 3.22z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.77 1.52V6.76a4.85 4.85 0 01-1-.07z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fleg">
+      <a href="#">The Archive</a><a href="#">Seasonal Edit</a><a href="#">Privacy Policy</a>
+      <a href="#">Your Privacy Cookies</a><a href="#">Notice at Collection</a>
+      <a href="#">Terms of Use</a><a href="#">Accessibility Statement</a>
+      <span style="margin-left:auto">🇮🇳 IN | Change</span>
+    </div>
+  </footer>
+
+</div><!-- /v-cart -->
+
+<script>
+  function toCart(){
+    const h=document.getElementById('v-home'),c=document.getElementById('v-cart'),w=document.getElementById('wipe');
+    w.classList.add('run');
+    setTimeout(()=>{h.classList.remove('active');h.classList.add('off-left');c.classList.remove('off-right');c.classList.add('active');c.scrollTop=0},275);
+    setTimeout(()=>w.classList.remove('run'),600);
+  }
+  function toHome(){
+    const h=document.getElementById('v-home'),c=document.getElementById('v-cart'),w=document.getElementById('wipe');
+    w.classList.add('run');
+    setTimeout(()=>{c.classList.remove('active');c.classList.add('off-right');h.classList.remove('off-left');h.classList.add('active');h.scrollTop=0},275);
+    setTimeout(()=>w.classList.remove('run'),600);
+  }
+  function chQ(btn,d){const n=btn.parentElement.querySelector('.qn');let v=parseInt(n.textContent)+d;if(v<1)v=1;n.textContent=v}
+  function rmI(btn){
+    const c=btn.closest('.cc');
+    c.style.transition='opacity .28s,transform .28s';c.style.opacity='0';c.style.transform='scale(0.93)';
+    setTimeout(()=>{c.remove();const n=document.querySelectorAll('.cc').length;document.getElementById('ccount').textContent=n+' products';document.getElementById('b1').textContent=n;document.getElementById('b2').textContent=n},300);
+  }
+</script>
+</body>
+</html>

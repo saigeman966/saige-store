@@ -1,0 +1,18 @@
+#cart-page {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 30%;
+  height: 100%;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  transition: right 0.5s ease;
+  z-index: 999;
+  padding: 20px;
+}
+#cart-page.active { right: 0; }
+
+/* Mobile tweak */
+@media (max-width: 768px) {
+  #cart-page { width: 100%; }
+}
